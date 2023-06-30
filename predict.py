@@ -90,7 +90,7 @@ class Predictor(BasePredictor):
             default=None,
         ),
         duration: int = Input(
-            description="Duration of the generated audio in seconds.", default=8, le=30
+            description="Duration of the generated audio in seconds.", default=8, le=60
         ),
         continuation: bool = Input(
             description="If `True`, generated music will continue `melody`. Otherwise, generated music will mimic `audio_input`'s melody.",
@@ -195,7 +195,7 @@ class Predictor(BasePredictor):
                     > model.lm.cfg.dataset.segment_duration
                 ):
                     raise ValueError(
-                        "duration + continuation duration must be <= 30 seconds"
+                        "duration + continuation duration must be <= 60 seconds"
                     )
 
                 set_generation_params(duration + input_audio_duration)
@@ -242,9 +242,9 @@ class Predictor(BasePredictor):
         if duration is None:
             duration = wav.shape[1] / model.sample_rate
 
-        # Check if duration is more than 30 seconds
-        if duration > 30:
-            raise ValueError("Duration cannot be more than 30 seconds")
+        # Check if duration is more than 60 seconds
+        if duration > 60:
+            raise ValueError("Duration cannot be more than 60 seconds")
 
         end_sample = int(model.sample_rate * duration)
         wav = wav[:, :end_sample]
