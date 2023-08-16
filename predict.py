@@ -60,7 +60,7 @@ class Predictor(BasePredictor):
         model_version: str = Input(description="Model to use for generation. If set to 'encode-decode', the audio specified via 'melody' will simply be encoded and then decoded.", default="melody", choices=["melody", "large", "encode-decode"]),
         prompt: str = Input(description="A description of the music you want to generate.", default=None),
         melody: Path = Input(description="An audio file that will influence the generated music. If `continuation` is `True`, the generated music will be a continuation of the audio file. Otherwise, the generated music will mimic the audio file's melody.", default=None),
-        duration: int = Input(description="Duration of the generated audio in seconds.", default=8, le=60),
+        duration: int = Input(description="Duration of the generated audio in seconds.", default=8, le=180),
         continuation: bool = Input(description="If `True`, generated music will continue `melody`. Otherwise, generated music will mimic `melody`'s melody.", default=False),
         continuation_start: int = Input(description="Start time of the audio file to use for continuation.", default=0, ge=0),
         continuation_end: int = Input(description="End time of the audio file to use for continuation. If -1 or None, will default to the end of the audio clip.", default=None, ge=0),
@@ -124,7 +124,7 @@ class Predictor(BasePredictor):
                 
             melody_duration = melody_wavform.shape[-1] / sr
             if duration + melody_duration > model.lm.cfg.dataset.segment_duration:
-                raise ValueError("Duration + continuation duration must be <= 60 seconds")
+                raise ValueError("Duration + continuation duration must be <= 180 seconds")
 
             if not continuation:
                 wav = model.generate_with_chroma([prompt], melody_wavform, sr, progress=True)
@@ -162,9 +162,9 @@ class Predictor(BasePredictor):
         if duration is None:
             duration = wav.shape[1] / model.sample_rate
 
-        # Check if duration is more than 60 seconds
-        if duration > 60:
-            raise ValueError("Duration cannot be more than 60 seconds")
+        # Check if duration is more than 180 seconds
+        if duration > 180:
+            raise ValueError("Duration cannot be more than 180 seconds")
 
         end_sample = int(model.sample_rate * duration)
         wav = wav[:, :end_sample]
